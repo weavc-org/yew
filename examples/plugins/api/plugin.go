@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/mogolade/yuu/pkg/plugin"
+	"github.com/weavc/yuu/pkg/plugin"
 )
 
-// Plugin variable that implements github.com/mogolade/yuu/pkg/plugin.Plugin
+// Plugin variable that implements github.com/weavc/yuu/pkg/plugin.Plugin
 // must be exported if building into a .so file.
 //This is how the Plugin is found within the binary plugin
 var Plugin ApiPlugin = ApiPlugin{}

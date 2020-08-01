@@ -1,5 +1,5 @@
-![tests](https://github.com/mogolade/yuu/workflows/Go/badge.svg?branch=master) 
-[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/mogolade/yuu)
+![tests](https://github.com/weavc/yuu/workflows/Go/badge.svg?branch=master) 
+[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/weavc/yuu)
 
 #### Yuu
 
@@ -15,8 +15,8 @@ Example use of the handler:
 
 ```go
 import (
-    "github.com/mogolade/yuu/pkg"
-    "github.com/mogolade/yuu/pkg/plugin"
+    "github.com/weavc/yuu/pkg"
+    "github.com/weavc/yuu/pkg/plugin"
 )
 
 type RegisterAPI interface {
@@ -56,7 +56,7 @@ func main() {
 
 #### Plugins
 
-Plugins should only ever import `"github.com/mogolade/yuu/pkg/plugin"`, this helps reduce circular reference issues and also the need to rebuild for any minor releases. If the plugin is being built & distibuted via the `.so` file (built using `go build -buildmode=plugin`), there should be an exported variable named `Plugin` in the main package, this is how the handler will find the Plugin in the binary, see below example for what this should look like.
+Plugins should only ever import `"github.com/weavc/yuu/pkg/plugin"`, this helps reduce circular reference issues and also the need to rebuild for any minor releases. If the plugin is being built & distibuted via the `.so` file (built using `go build -buildmode=plugin`), there should be an exported variable named `Plugin` in the main package, this is how the handler will find the Plugin in the binary, see below example for what this should look like.
 
 Example plugin:
 
@@ -67,10 +67,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/mogolade/yuu/pkg/plugin"
+	"github.com/weavc/yuu/pkg/plugin"
 )
 
-// Plugin variable that implements github.com/mogolade/yuu/pkg/plugin.Plugin
+// Plugin variable that implements github.com/weavc/yuu/pkg/plugin.Plugin
 // must be exported if building into a .so file.
 //This is how the Plugin is found within the binary plugin
 var Plugin ApiPlugin = ApiPlugin{}

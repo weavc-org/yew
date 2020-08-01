@@ -3,8 +3,8 @@ package pkg
 import (
 	"fmt"
 
-	"github.com/mogolade/yuu/internal"
-	"github.com/mogolade/yuu/pkg/plugin"
+	"github.com/weavc/yuu/internal"
+	"github.com/weavc/yuu/pkg/plugin"
 )
 
 // Handler struct. This implements plugin/Handler interface and handles the plugins

@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/mogolade/yuu/pkg"
-	"github.com/mogolade/yuu/pkg/plugin"
+	"github.com/weavc/yuu/pkg"
+	"github.com/weavc/yuu/pkg/plugin"
 )
 
 type RegisterAPI interface {

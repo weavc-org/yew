@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mogolade/yuu/internal"
+	"github.com/weavc/yuu/internal"
 )
 
 var (

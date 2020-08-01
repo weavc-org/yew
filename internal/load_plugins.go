@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"plugin"
 
-	p "github.com/mogolade/yuu/pkg/plugin"
+	p "github.com/weavc/yuu/pkg/plugin"
 )
 
 func LoadPlugins(directory string, handler func(v p.Plugin) error) error {
@@ -52,7 +52,7 @@ func LoadPlugin(path string, handler func(v p.Plugin) error) error {
 
 	p3, t := p2.(p.Plugin)
 	if t == false {
-		return fmt.Errorf("Plugin variable not of correct type. should implement github.com/mogolade/yuu/pkg/plugin/Plugin")
+		return fmt.Errorf("Plugin variable not of correct type. should implement github.com/weavc/yuu/pkg/plugin/Plugin")
 	}
 
 	return handler(p3)

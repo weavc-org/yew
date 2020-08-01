@@ -3,7 +3,7 @@ package pkg
 import (
 	"fmt"
 
-	"github.com/mogolade/yuu/pkg/plugin"
+	"github.com/weavc/yuu/pkg/plugin"
 
 	"testing"
 )

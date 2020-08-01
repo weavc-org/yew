@@ -3,7 +3,7 @@ package internal
 import (
 	"testing"
 
-	"github.com/mogolade/yuu/pkg/plugin"
+	"github.com/weavc/yuu/pkg/plugin"
 )
 
 var built bool = false
