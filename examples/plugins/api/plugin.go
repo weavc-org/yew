@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/weavc/yuu/pkg/types"
+	"github.com/weavc/yuu/pkg"
 )
 
 // Plugin variable that implements github.com/weavc/yuu/pkg/plugin.Plugin
@@ -14,19 +14,19 @@ var Plugin ApiPlugin = ApiPlugin{config: &c{}}
 
 // ApiPlugin is the struct that implements plugin.Plugin & more
 type ApiPlugin struct {
-	handler types.Handler
+	handler pkg.Handler
 
-	types.Plugin
+	pkg.Plugin
 	config *c
 }
 
 // Manifest gives the handler & other plugins an idea of what this plugin is
-func (p *ApiPlugin) Manifest() types.Manifest {
-	return types.Manifest{Name: "api", Description: "Api plugin", Config: p.config}
+func (p *ApiPlugin) Manifest() pkg.Manifest {
+	return pkg.Manifest{Name: "api", Description: "Api plugin", Config: p.config}
 }
 
 // Register is used to initialize & setup the plugin
-func (p *ApiPlugin) Register(m types.Handler) error {
+func (p *ApiPlugin) Register(m pkg.Handler) error {
 	// store Handler pointer
 	p.handler = m
 

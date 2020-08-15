@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/weavc/yuu/pkg"
+	"github.com/weavc/yuu/pkg/builders"
 	"github.com/weavc/yuu/pkg/handler"
-	"github.com/weavc/yuu/pkg/types"
 )
 
 type RegisterAPI interface {
@@ -17,20 +18,20 @@ func main() {
 	var s *http.ServeMux = http.DefaultServeMux
 
 	// build plugins from source to examples/.bin
-	handler.BuildPlugins("examples/.bin/", "examples/plugins/hello-world", "examples/plugins/api")
+	builders.BuildPlugins("examples/.bin/", "examples/plugins/hello-world", "examples/plugins/api")
 
 	// create/get new Handler structure & load plugins from examples/.bin
-	m := handler.NewHandler(&handler.HandlerConfig{
+	m := handler.NewHandler(&handler.Config{
 		Services:              true,
 		PluginConfigDirectory: "examples/configs",
 		Events:                map[string]func(v interface{}){"api": apiEvent},
 	})
 
-	m.LoadPluginDir("examples/.bin/")
+	m.LoadPluginsDir("examples/.bin/")
 
 	// recieve api events, these are emitted in the api plugin
 	// walk through plugins (foreach registered plugin)
-	m.Walk(func(man types.Manifest, plgin types.Plugin) {
+	m.Walk(func(man pkg.Manifest, plgin pkg.Plugin) {
 		// check if plugin implements RegisterAPI interface defined above
 		p, e := plgin.(RegisterAPI)
 		if e == true {

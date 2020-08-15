@@ -4,18 +4,18 @@ import (
 	"fmt"
 
 	"github.com/weavc/yuu/internal/configs"
-	"github.com/weavc/yuu/pkg/types"
+	"github.com/weavc/yuu/pkg"
 )
 
-var DefaultConfig *HandlerConfig = &HandlerConfig{Services: true}
+var DefaultConfig *Config = &Config{Services: true}
 
-type HandlerConfig struct {
+type Config struct {
 	Services              bool
 	PluginConfigDirectory string
 	Events                map[string]func(v interface{})
 }
 
-func (m *Handler) LoadConfig(plg types.Plugin, v interface{}) error {
+func (m *Handler) LoadConfig(plg pkg.Plugin, v interface{}) error {
 	if m.Config.PluginConfigDirectory == "" {
 		return fmt.Errorf("No config directory set")
 	}
@@ -24,8 +24,6 @@ func (m *Handler) LoadConfig(plg types.Plugin, v interface{}) error {
 	if err != nil {
 		return fmt.Errorf("Error loading in config: %s", err)
 	}
-
-	fmt.Print(v)
 
 	return nil
 }

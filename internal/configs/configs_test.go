@@ -5,10 +5,10 @@ import (
 )
 
 type data struct {
-	Name  string
-	Types int32
-	Array []string
-	B     bool
+	Name   string
+	Number int32
+	Array  []string
+	Boo    bool
 }
 
 func TestLoadConfig(t *testing.T) {
@@ -19,8 +19,8 @@ func TestLoadConfig(t *testing.T) {
 		t.Errorf("incorrect name binding. Expected %s, Got %s", "test", v.Name)
 	}
 
-	if v.Types != 1233 {
-		t.Errorf("incorrect types binding. Expected %d, Got %d", 1233, v.Types)
+	if v.Number != 1233 {
+		t.Errorf("incorrect types binding. Expected %d, Got %d", 1233, v.Number)
 	}
 
 	if v.Array[0] != "test1" || v.Array[1] != "test2" || v.Array[2] != "test3" {
@@ -28,7 +28,7 @@ func TestLoadConfig(t *testing.T) {
 			"test1, test2, test3", v.Array)
 	}
 
-	if v.B != true {
-		t.Errorf("incorrect types binding. Expected %v, Got %v", true, v.B)
+	if v.Boo != true {
+		t.Errorf("incorrect types binding. Expected %v, Got %v", true, v.Boo)
 	}
 }
