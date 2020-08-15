@@ -3,7 +3,7 @@ package internal
 import (
 	"testing"
 
-	"github.com/weavc/yuu/pkg"
+	"github.com/weavc/yew/pkg"
 )
 
 var built bool = false

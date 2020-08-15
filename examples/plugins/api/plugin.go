@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/weavc/yuu/pkg"
+	"github.com/weavc/yew/pkg"
 )
 
-// Plugin variable that implements github.com/weavc/yuu/pkg/plugin.Plugin
+// Plugin variable that implements github.com/weavc/yew/pkg/plugin.Plugin
 // must be exported if building into a .so file.
 //This is how the Plugin is found within the binary plugin
 var Plugin ApiPlugin = ApiPlugin{config: &c{}}
@@ -22,7 +22,7 @@ type ApiPlugin struct {
 
 // Manifest gives the handler & other plugins an idea of what this plugin is
 func (p *ApiPlugin) Manifest() pkg.Manifest {
-	return pkg.Manifest{Name: "api", Description: "Api plugin", Config: p.config}
+	return pkg.Manifest{Namespace: "examples.api", Description: "Api plugin", Config: p.config}
 }
 
 // Register is used to initialize & setup the plugin

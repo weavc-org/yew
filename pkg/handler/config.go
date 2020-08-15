@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 
-	"github.com/weavc/yuu/internal/configs"
-	"github.com/weavc/yuu/pkg"
+	"github.com/weavc/yew/internal/configs"
+	"github.com/weavc/yew/pkg"
 )
 
 var DefaultConfig *Config = &Config{Services: true}

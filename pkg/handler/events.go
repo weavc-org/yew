@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/weavc/yuu/pkg"
+	"github.com/weavc/yew/pkg"
 )
 
 // Emit emits an event, triggering any registered callbacks

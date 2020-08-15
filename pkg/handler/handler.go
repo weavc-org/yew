@@ -3,9 +3,9 @@ package handler
 import (
 	"fmt"
 
-	"github.com/weavc/yuu/internal"
-	"github.com/weavc/yuu/internal/configs"
-	"github.com/weavc/yuu/pkg"
+	"github.com/weavc/yew/internal"
+	"github.com/weavc/yew/internal/configs"
+	"github.com/weavc/yew/pkg"
 )
 
 // Handler struct. This implements plugin/Handler interface and handles the plugins
@@ -36,42 +36,6 @@ func (m *Handler) LoadPlugins(p ...pkg.Plugin) error {
 	}
 
 	return nil
-}
-
-// LoadPlugin will take a struct that implements plugin.Plugin and load it into the Handler
-func (m *Handler) loadPlugin(p pkg.Plugin) error {
-	plg, c := p.(pkg.Plugin)
-	if c == true {
-		m.plugins = append(m.plugins, plg)
-
-		man := plg.Manifest()
-
-		e := plg.Register(m)
-		if e != nil {
-			return e
-		}
-
-		m.Emit(pkg.PLUGIN_REGISTERED, plg)
-
-		if man.Config != nil {
-			err := m.LoadConfig(plg, man.Config)
-			if err != nil {
-				fmt.Print(fmt.Errorf("there was an error loading config for %s. this could mean the file was missing, or there were errors loading it", man.Name))
-			}
-		}
-
-		service, c := p.(pkg.Service)
-		if c == true {
-			if m.Config.Services == true {
-				go service.Start()
-				m.Emit(pkg.SERVICE_STARTED, plg)
-			}
-		}
-
-		return nil
-	}
-
-	return fmt.Errorf("Plugin does not implement Plugin interface")
 }
 
 // Walk will take you on a walk through the registered plugins
@@ -112,4 +76,40 @@ func NewHandler(c *Config) pkg.Handler {
 
 	m := &Handler{Config: c}
 	return m
+}
+
+// LoadPlugin will take a struct that implements plugin.Plugin and load it into the Handler
+func (m *Handler) loadPlugin(p pkg.Plugin) error {
+	plg, c := p.(pkg.Plugin)
+	if c == true {
+		m.plugins = append(m.plugins, plg)
+
+		man := plg.Manifest()
+
+		e := plg.Register(m)
+		if e != nil {
+			return e
+		}
+
+		m.Emit(pkg.PLUGIN_REGISTERED, plg)
+
+		if man.Config != nil {
+			err := m.LoadConfig(plg, man.Config)
+			if err != nil {
+				fmt.Print(fmt.Errorf("there was an error loading config for %s. this could mean the file was missing, or there were errors loading it", man.Name))
+			}
+		}
+
+		service, c := p.(pkg.Service)
+		if c == true {
+			if m.Config.Services == true {
+				go service.Start()
+				m.Emit(pkg.SERVICE_STARTED, plg)
+			}
+		}
+
+		return nil
+	}
+
+	return fmt.Errorf("Plugin does not implement Plugin interface")
 }

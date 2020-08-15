@@ -1,0 +1,5 @@
+plugins:
+  - examples.api:
+    payload: foobar
+  - examples.helloworld:
+    say: world

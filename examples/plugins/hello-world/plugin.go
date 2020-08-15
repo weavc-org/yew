@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/weavc/yuu/pkg"
+	"github.com/weavc/yew/pkg"
 )
 
 // Plugin variable must be exported
-// Plugin must also implement the github.com/weavc/yuu/pkg/plugin.Plugin interface
+// Plugin must also implement the github.com/weavc/yew/pkg/plugin.Plugin interface
 var Plugin HelloWorldPlugin = HelloWorldPlugin{}
 
 type HelloWorldPlugin struct {
@@ -19,7 +19,7 @@ type HelloWorldPlugin struct {
 
 func (p *HelloWorldPlugin) Manifest() pkg.Manifest {
 	return pkg.Manifest{
-		Name:        "HelloWorld",
+		Namespace:   "examples.helloworld",
 		Description: "Hello world event plugin",
 		Events:      map[string]func(v interface{}){pkg.LOADED: helloWorldEvent},
 	}

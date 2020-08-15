@@ -1,6 +1,6 @@
 package builders
 
-import "github.com/weavc/yuu/internal"
+import "github.com/weavc/yew/internal"
 
 // BuildPlugin builds package into a plugin
 func BuildPlugin(output string, dir string) error {

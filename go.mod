@@ -1,4 +1,4 @@
-module github.com/weavc/yuu
+module github.com/weavc/yew
 
 go 1.14
 

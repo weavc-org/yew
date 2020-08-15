@@ -1,13 +1,19 @@
 package pkg
 
 const (
-	LOADED            string = "initialized"
-	PLUGIN_REGISTERED string = "registered"
-	SERVICE_STARTED   string = "service"
+	// LoadedEvent event name
+	// Triggered after loading a plugin or set of plugins
+	LoadedEvent string = "loaded"
+	// PluginRegisteredEvent event name
+	// Triggered after registering a plugin
+	PluginRegisteredEvent string = "registered"
+	// ServiceStartedEvent event name
+	// Triggered after starting a service
+	ServiceStartedEvent string = "service"
 )
 
-// Handler interface, handles and provides plugins with an interface to extend and communicate with the base functionality
-// implemention in internal/Handler.go
+// Handler defines a set of functions that can be used by plugins and the application
+// see pkg/handler for implementation of interface
 type Handler interface {
 	LoadPluginsDir(directory string) error
 	LoadPlugins(v ...Plugin) error
@@ -16,8 +22,9 @@ type Handler interface {
 	GetPlugins() []Plugin
 }
 
+// Manifest defines the requirements of a plugin to the handler
 type Manifest struct {
-	Name        string
+	Namespace   string
 	Description string
 	Events      map[string]func(v interface{})
 	Config      interface{}
@@ -30,9 +37,8 @@ type Plugin interface {
 	Register(m Handler) error
 }
 
-// Service defines a basic service plugin
-// start is run in a go routine, shortly after Handler is initialized
-// todo: context, channel
+// Service defines a service plugin
+// A service is started as a go routine when the plugin is registered
 type Service interface {
 	Plugin
 	Start()
