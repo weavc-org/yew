@@ -16,8 +16,8 @@ type HelloWorldPlugin struct {
 	plugin.Plugin
 }
 
-func (p *HelloWorldPlugin) Manifest() *plugin.Manifest {
-	return &plugin.Manifest{Name: "HelloWorld", Description: "Hello world event plugin"}
+func (p *HelloWorldPlugin) Manifest() plugin.Manifest {
+	return plugin.Manifest{Name: "HelloWorld", Description: "Hello world event plugin"}
 }
 
 // Register is used to initialize & setup the plugin

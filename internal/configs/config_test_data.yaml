@@ -1,0 +1,7 @@
+name: test
+types: 1233
+array:
+  - test1
+  - test2
+  - test3
+b: true

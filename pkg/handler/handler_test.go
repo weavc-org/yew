@@ -1,4 +1,4 @@
-package pkg
+package handler
 
 import (
 	"fmt"
@@ -51,7 +51,7 @@ func TestGets(t *testing.T) {
 		t.Errorf("%d services loaded, expected 2", len(servs))
 	}
 
-	m.Walk(func(m *plugin.Manifest, v plugin.Plugin) {
+	m.Walk(func(m plugin.Manifest, v plugin.Plugin) {
 		if m.Name != "test1" && m.Name != "test2" {
 			t.Errorf("Incorrect plugin found in walk")
 		}
@@ -92,8 +92,8 @@ type TestPlugin1 struct {
 	plugin.Service
 }
 
-func (p *TestPlugin1) Manifest() *plugin.Manifest {
-	return &plugin.Manifest{Name: p.name, Description: "Plugin used in testing"}
+func (p *TestPlugin1) Manifest() plugin.Manifest {
+	return plugin.Manifest{Name: p.name, Description: "Plugin used in testing"}
 }
 
 func (p *TestPlugin1) Register(m plugin.Handler) error {

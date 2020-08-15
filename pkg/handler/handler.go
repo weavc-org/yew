@@ -1,4 +1,4 @@
-package pkg
+package handler
 
 import (
 	"fmt"
@@ -14,6 +14,9 @@ type Handler struct {
 	eventHandlers []*eventHandler
 
 	plugins []plugin.Plugin
+
+	config    *handlerConfig
+	configDir string
 }
 
 // LoadPluginPath will load a plugin via a file path
@@ -84,7 +87,7 @@ func (m *Handler) Emit(name plugin.Event, v interface{}) {
 
 // Walk will take you on a walk through the registered plugins
 // for each plugin, the handler function passed through will be called
-func (m *Handler) Walk(handler func(manifest *plugin.Manifest, v plugin.Plugin)) {
+func (m *Handler) Walk(handler func(manifest plugin.Manifest, v plugin.Plugin)) {
 	for _, p := range m.plugins {
 		handler(p.Manifest(), p)
 	}
@@ -93,7 +96,7 @@ func (m *Handler) Walk(handler func(manifest *plugin.Manifest, v plugin.Plugin))
 // GetPlugins will return an array of registered plugins
 func (m *Handler) GetPlugins() []plugin.Plugin {
 	var plgs []plugin.Plugin
-	m.Walk(func(manifest *plugin.Manifest, v plugin.Plugin) {
+	m.Walk(func(manifest plugin.Manifest, v plugin.Plugin) {
 		p, t := v.(plugin.Plugin)
 		if t == true {
 			plgs = append(plgs, p)
@@ -106,7 +109,7 @@ func (m *Handler) GetPlugins() []plugin.Plugin {
 // GetServices will return an array of Service plugins
 func (m *Handler) GetServices() []plugin.Service {
 	var plgs []plugin.Service
-	m.Walk(func(manifest *plugin.Manifest, v plugin.Plugin) {
+	m.Walk(func(manifest plugin.Manifest, v plugin.Plugin) {
 		p, t := v.(plugin.Service)
 		if t == true {
 			plgs = append(plgs, p)
@@ -118,7 +121,7 @@ func (m *Handler) GetServices() []plugin.Service {
 
 // NewHandler creates & returns pkg.Handler structure
 func NewHandler() plugin.Handler {
-	m := &Handler{}
+	m := &Handler{config: defaultConfig()}
 	return m
 }
 

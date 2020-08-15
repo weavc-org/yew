@@ -1,4 +1,4 @@
-package plugin
+package types
 
 const (
 	LOADED            Event = "initialized"
@@ -16,9 +16,11 @@ type Handler interface {
 	LoadPlugin(v Plugin) error
 	Emit(name Event, v interface{})
 	On(name Event, callback func(v interface{}))
-	Walk(func(manifest *Manifest, v Plugin))
+	Walk(func(manifest Manifest, v Plugin))
 	GetPlugins() []Plugin
 	GetServices() []Service
+	LoadConfig(plg Plugin, v interface{}) error
+	SetupConfigDirectory(dir string) error
 }
 
 type Manifest struct {
@@ -26,11 +28,12 @@ type Manifest struct {
 	Description string
 	Registered  bool
 	Events      []string
+	Data        map[string]interface{}
 }
 
 // Plugin defines a basic plugin
 type Plugin interface {
-	Manifest() *Manifest
+	Manifest() Manifest
 	Register(m Handler) error
 }
 

@@ -20,8 +20,8 @@ type ApiPlugin struct {
 }
 
 // Manifest gives the handler & other plugins an idea of what this plugin is
-func (p *ApiPlugin) Manifest() *plugin.Manifest {
-	return &plugin.Manifest{Name: "Api", Description: "Api plugin", Events: []string{"api"}}
+func (p *ApiPlugin) Manifest() plugin.Manifest {
+	return plugin.Manifest{Name: "Api", Description: "Api plugin", Events: []string{"api"}}
 }
 
 // Register is used to initialize & setup the plugin
