@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"plugin"
 
-	p "github.com/weavc/yuu/pkg/plugin"
+	"github.com/weavc/yuu/pkg/types"
 )
 
-func LoadPlugins(directory string, handler func(v p.Plugin) error) error {
+func LoadPlugins(directory string, handler func(v types.Plugin) error) error {
 	var files []string
 	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -39,7 +39,7 @@ func LoadPlugins(directory string, handler func(v p.Plugin) error) error {
 	return nil
 }
 
-func LoadPlugin(path string, handler func(v p.Plugin) error) error {
+func LoadPlugin(path string, handler func(v types.Plugin) error) error {
 	p1, err := plugin.Open(path)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func LoadPlugin(path string, handler func(v p.Plugin) error) error {
 		return err
 	}
 
-	p3, t := p2.(p.Plugin)
+	p3, t := p2.(types.Plugin)
 	if t == false {
 		return fmt.Errorf("Plugin variable not of correct type. should implement github.com/weavc/yuu/pkg/plugin/Plugin")
 	}

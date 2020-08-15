@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/weavc/yuu/pkg/plugin"
+	"github.com/weavc/yuu/pkg/types"
 )
 
 // Plugin variable must be exported
@@ -11,24 +11,25 @@ import (
 var Plugin HelloWorldPlugin = HelloWorldPlugin{}
 
 type HelloWorldPlugin struct {
-	handler plugin.Handler
+	handler types.Handler
+	events  map[string]func(v interface{})
 
-	plugin.Plugin
+	types.Plugin
 }
 
-func (p *HelloWorldPlugin) Manifest() plugin.Manifest {
-	return plugin.Manifest{Name: "HelloWorld", Description: "Hello world event plugin"}
+func (p *HelloWorldPlugin) Manifest() types.Manifest {
+	return types.Manifest{
+		Name:        "HelloWorld",
+		Description: "Hello world event plugin",
+		Events:      map[string]func(v interface{}){types.LOADED: helloWorldEvent},
+	}
 }
 
 // Register is used to initialize & setup the plugin
-func (p *HelloWorldPlugin) Register(m plugin.Handler) error {
+func (p *HelloWorldPlugin) Register(m types.Handler) error {
 
 	// store Handler pointer
 	p.handler = m
-
-	// register event
-	p.handler.On(plugin.LOADED, helloWorldEvent)
-
 	return nil
 }
 

@@ -1,12 +1,10 @@
 package types
 
 const (
-	LOADED            Event = "initialized"
-	PLUGIN_REGISTERED Event = "registered"
-	SERVICE_STARTED   Event = "service"
+	LOADED            string = "initialized"
+	PLUGIN_REGISTERED string = "registered"
+	SERVICE_STARTED   string = "service"
 )
-
-type Event string
 
 // Handler interface, handles and provides plugins with an interface to extend and communicate with the base functionality
 // implemention in internal/Handler.go
@@ -14,8 +12,7 @@ type Handler interface {
 	LoadPluginDir(directory string) error
 	LoadPluginPath(path string) error
 	LoadPlugin(v Plugin) error
-	Emit(name Event, v interface{})
-	On(name Event, callback func(v interface{}))
+	Emit(name string, v interface{})
 	Walk(func(manifest Manifest, v Plugin))
 	GetPlugins() []Plugin
 	GetServices() []Service
@@ -24,11 +21,13 @@ type Handler interface {
 }
 
 type Manifest struct {
-	Name        string
-	Description string
-	Registered  bool
-	Events      []string
-	Data        map[string]interface{}
+	Name         string
+	Description  string
+	Events       map[string]func(v interface{})
+	Config       interface{}
+	CreateConfig func() interface{}
+	Data         map[string]interface{}
+	Registered   bool
 }
 
 // Plugin defines a basic plugin

@@ -3,7 +3,7 @@ package internal
 import (
 	"testing"
 
-	"github.com/weavc/yuu/pkg/plugin"
+	"github.com/weavc/yuu/pkg/types"
 )
 
 var built bool = false
@@ -37,7 +37,7 @@ func TestLoadPlugins(t *testing.T) {
 		}
 	}
 
-	e := LoadPlugins("../examples/.bin/", func(v plugin.Plugin) error { return nil })
+	e := LoadPlugins("../examples/.bin/", func(v types.Plugin) error { return nil })
 	if e != nil {
 		t.Error(e)
 	}

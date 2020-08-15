@@ -4,19 +4,17 @@ import (
 	"fmt"
 
 	"github.com/weavc/yuu/internal"
-	"github.com/weavc/yuu/pkg/plugin"
+	"github.com/weavc/yuu/internal/configs"
+	"github.com/weavc/yuu/pkg/types"
 )
 
 // Handler struct. This implements plugin/Handler interface and handles the plugins
 type Handler struct {
-	plugin.Handler
+	types.Handler
 
-	eventHandlers []*eventHandler
+	plugins []types.Plugin
 
-	plugins []plugin.Plugin
-
-	config    *handlerConfig
-	configDir string
+	Config *HandlerConfig
 }
 
 // LoadPluginPath will load a plugin via a file path
@@ -25,7 +23,7 @@ func (m *Handler) LoadPluginPath(path string) error {
 	if e != nil {
 		return e
 	}
-	m.Emit(plugin.LOADED, nil)
+	m.Emit(types.LOADED, nil)
 	return nil
 }
 
@@ -35,13 +33,13 @@ func (m *Handler) LoadPluginDir(directory string) error {
 	if e != nil {
 		return e
 	}
-	m.Emit(plugin.LOADED, nil)
+	m.Emit(types.LOADED, nil)
 	return nil
 }
 
 // LoadPlugin will take a struct that implements plugin.Plugin and load it into the Handler
-func (m *Handler) LoadPlugin(v plugin.Plugin) error {
-	plg, c := v.(plugin.Plugin)
+func (m *Handler) LoadPlugin(v types.Plugin) error {
+	plg, c := v.(types.Plugin)
 	if c == true {
 		m.plugins = append(m.plugins, plg)
 
@@ -52,13 +50,23 @@ func (m *Handler) LoadPlugin(v plugin.Plugin) error {
 				return e
 			}
 
-			m.Emit(plugin.PLUGIN_REGISTERED, plg)
+			m.Emit(types.PLUGIN_REGISTERED, plg)
 		}
 
-		service, c := v.(plugin.Service)
+		if man.Config != nil {
+			err := m.LoadConfig(plg, man.Config)
+			if err != nil {
+
+				panic(err)
+			}
+		}
+
+		service, c := v.(types.Service)
 		if c == true {
-			go service.Start()
-			m.Emit(plugin.SERVICE_STARTED, plg)
+			if m.Config.Services == true {
+				go service.Start()
+				m.Emit(types.SERVICE_STARTED, plg)
+			}
 		}
 
 		man.Registered = true
@@ -68,36 +76,19 @@ func (m *Handler) LoadPlugin(v plugin.Plugin) error {
 	return fmt.Errorf("Plugin does not implement Plugin interface")
 }
 
-// On registers a callback function, triggered on each emit of an event with the given name
-func (m *Handler) On(name plugin.Event, callback func(v interface{})) {
-	m.eventHandlers = append(m.eventHandlers, &eventHandler{Name: name, Callback: callback})
-}
-
-// Emit emits an event, triggering any registered callbacks
-// for events of the same name registered through On
-func (m *Handler) Emit(name plugin.Event, v interface{}) {
-	for _, h := range m.eventHandlers {
-		if h.Name == name {
-			if h.Callback != nil {
-				go h.Callback(v)
-			}
-		}
-	}
-}
-
 // Walk will take you on a walk through the registered plugins
 // for each plugin, the handler function passed through will be called
-func (m *Handler) Walk(handler func(manifest plugin.Manifest, v plugin.Plugin)) {
+func (m *Handler) Walk(handler func(manifest types.Manifest, v types.Plugin)) {
 	for _, p := range m.plugins {
 		handler(p.Manifest(), p)
 	}
 }
 
 // GetPlugins will return an array of registered plugins
-func (m *Handler) GetPlugins() []plugin.Plugin {
-	var plgs []plugin.Plugin
-	m.Walk(func(manifest plugin.Manifest, v plugin.Plugin) {
-		p, t := v.(plugin.Plugin)
+func (m *Handler) GetPlugins() []types.Plugin {
+	var plgs []types.Plugin
+	m.Walk(func(manifest types.Manifest, v types.Plugin) {
+		p, t := v.(types.Plugin)
 		if t == true {
 			plgs = append(plgs, p)
 		}
@@ -107,10 +98,10 @@ func (m *Handler) GetPlugins() []plugin.Plugin {
 }
 
 // GetServices will return an array of Service plugins
-func (m *Handler) GetServices() []plugin.Service {
-	var plgs []plugin.Service
-	m.Walk(func(manifest plugin.Manifest, v plugin.Plugin) {
-		p, t := v.(plugin.Service)
+func (m *Handler) GetServices() []types.Service {
+	var plgs []types.Service
+	m.Walk(func(manifest types.Manifest, v types.Plugin) {
+		p, t := v.(types.Service)
 		if t == true {
 			plgs = append(plgs, p)
 		}
@@ -120,8 +111,21 @@ func (m *Handler) GetServices() []plugin.Service {
 }
 
 // NewHandler creates & returns pkg.Handler structure
-func NewHandler() plugin.Handler {
-	m := &Handler{config: defaultConfig()}
+func NewHandler(c *HandlerConfig) types.Handler {
+	if c == nil {
+		c = DefaultConfig
+	}
+
+	if c.PluginConfigDirectory != "" {
+		s, err := configs.CheckPath(c.PluginConfigDirectory)
+		if err != nil {
+			panic(err)
+		}
+
+		c.PluginConfigDirectory = s
+	}
+
+	m := &Handler{Config: c}
 	return m
 }
 
@@ -131,11 +135,6 @@ func BuildPlugin(output string, dir string) error {
 }
 
 // BuildPlugins accepts multiple directories to be built
-func BuildPlugins(output string, dirs []string) error {
+func BuildPlugins(output string, dirs ...string) error {
 	return internal.BuildPlugins(output, dirs)
-}
-
-type eventHandler struct {
-	Name     plugin.Event
-	Callback func(v interface{})
 }
