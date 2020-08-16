@@ -4,28 +4,29 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/weavc/yuu/pkg/plugin"
+	"github.com/weavc/yew/pkg"
 )
 
-// Plugin variable that implements github.com/weavc/yuu/pkg/plugin.Plugin
+// Plugin variable that implements github.com/weavc/yew/pkg/plugin.Plugin
 // must be exported if building into a .so file.
 //This is how the Plugin is found within the binary plugin
-var Plugin ApiPlugin = ApiPlugin{}
+var Plugin APIPlugin = APIPlugin{config: &c{}}
 
-// ApiPlugin is the struct that implements plugin.Plugin & more
-type ApiPlugin struct {
-	handler plugin.Handler
+// APIPlugin is the struct that implements plugin.Plugin & more
+type APIPlugin struct {
+	handler pkg.Handler
 
-	plugin.Plugin
+	pkg.Plugin
+	config *c
 }
 
 // Manifest gives the handler & other plugins an idea of what this plugin is
-func (p *ApiPlugin) Manifest() *plugin.Manifest {
-	return &plugin.Manifest{Name: "Api", Description: "Api plugin", Events: []string{"api"}}
+func (p *APIPlugin) Manifest() pkg.Manifest {
+	return pkg.Manifest{Namespace: "examples.api", Description: "Api plugin", Config: p.config}
 }
 
 // Register is used to initialize & setup the plugin
-func (p *ApiPlugin) Register(m plugin.Handler) error {
+func (p *APIPlugin) Register(m pkg.Handler) error {
 	// store Handler pointer
 	p.handler = m
 
@@ -35,10 +36,14 @@ func (p *ApiPlugin) Register(m plugin.Handler) error {
 // RegisterRoutes implements an interface defined in examples/main.go
 // An example of how plugins can be extended to provide additional
 // communication with different applications.
-func (p ApiPlugin) RegisterRoutes(mux *http.ServeMux) {
+func (p *APIPlugin) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		p.handler.Emit("api", r.URL.String())
 		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+		json.NewEncoder(w).Encode(map[string]string{"status": "success", "payload": p.config.Payload})
 	})
+}
+
+type c struct {
+	Payload string
 }

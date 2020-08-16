@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 )
 
+// BuildPlugin builds go plugins to provided directory
 func BuildPlugin(output string, dir string) error {
 	b, e := build.ImportDir(dir, build.FindOnly)
 	if e != nil {
@@ -50,6 +51,8 @@ func BuildPlugin(output string, dir string) error {
 	return nil
 }
 
+// BuildPlugins finds all plugins in given directories, check they exist
+// then passes them over 1 by 1 to BuildPlugin for building
 func BuildPlugins(output string, dirs []string) error {
 
 	info, e := os.Stat(output)

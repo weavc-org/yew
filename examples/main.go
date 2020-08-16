@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/weavc/yuu/pkg"
-	"github.com/weavc/yuu/pkg/plugin"
+	"github.com/weavc/yew/pkg"
+	"github.com/weavc/yew/pkg/builders"
+	"github.com/weavc/yew/pkg/handler"
 )
 
 type RegisterAPI interface {
@@ -14,30 +15,35 @@ type RegisterAPI interface {
 
 func main() {
 
-	var s *http.ServeMux = http.DefaultServeMux
+	var mux *http.ServeMux = http.DefaultServeMux
 
 	// build plugins from source to examples/.bin
-	pkg.BuildPlugins("examples/.bin/", []string{"examples/plugins/hello-world", "examples/plugins/api"})
+	builders.BuildPlugins("examples/.bin/", "examples/plugins/hello-world", "examples/plugins/api")
 
 	// create/get new Handler structure & load plugins from examples/.bin
-	m := pkg.NewHandler()
-	m.LoadPluginDir("examples/.bin/")
-
-	// recieve api events, these are emitted in the api plugin
-	m.On("api", func(v interface{}) {
-		s := v.(string)
-		log.Print(s)
+	m := handler.NewHandler(&handler.Config{
+		Services:         true,
+		PluginConfigPath: "examples/plugins.yaml",
+		Events:           map[string]func(event string, v interface{}){"api": apiEvent},
 	})
 
+	m.LoadPluginsDir("examples/.bin/")
+
+	// recieve api events, these are emitted in the api plugin
 	// walk through plugins (foreach registered plugin)
-	m.Walk(func(man *plugin.Manifest, plgin plugin.Plugin) {
+	m.Walk(func(man pkg.Manifest, plugin pkg.Plugin) {
 		// check if plugin implements RegisterAPI interface defined above
-		p, e := plgin.(RegisterAPI)
+		p, e := plugin.(RegisterAPI)
 		if e == true {
 			// let plugin register handlers
-			p.RegisterRoutes(s)
+			p.RegisterRoutes(mux)
 		}
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func apiEvent(event string, v interface{}) {
+	s := v.(string)
+	log.Print(s)
 }

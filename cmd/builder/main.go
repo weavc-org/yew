@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/weavc/yuu/internal"
+	"github.com/weavc/yew/internal"
 )
 
 var (
@@ -15,6 +15,7 @@ var (
 	dir    = flag.String("dir", "", "comma-separated list of directories to build; must be set")
 )
 
+// Usage of builder
 func Usage() {
 	fmt.Fprintf(os.Stderr, "Usage of builder:\n")
 	fmt.Fprintf(os.Stderr, "\tbuilder -output=[output directory] -dir=[...directory]\n")

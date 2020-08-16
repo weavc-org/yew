@@ -1,108 +1,81 @@
-![tests](https://github.com/weavc/yuu/workflows/Go/badge.svg?branch=master) 
-[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/weavc/yuu)
+![tests](https://github.com/weavc/yew/workflows/Go/badge.svg?branch=master) 
+[![GoDoc](https://img.shields.io/static/v1?label=godoc&message=reference&color=blue)](https://pkg.go.dev/github.com/weavc/yew)
 
-#### Yuu
+#### Yew
 
-Yuu is a lightweight module in its early stages of development/testing. Its aim is to aid in using plugin/event driven architecture within go. There are probably alternatives out there, I just started doing something small and it turned into this.
+Yew is a lightweight module mostly in its development/testing phase. Its aim is to aid in using plugin/event driven architecture within go. There are probably alternatives out there, I just started doing something small and it turned into this.
 
 There are 2 main parts to this module, the `Plugin` and `Handler`. The `Handler` can register any `Plugin`'s it is asked to load, this can be through `.so` file(s) (built using `go build -buildmode=plugin`) or any struct that implements the `pkg/plugin.Plugin` interface, example of this [here](#Plugins).
 
 #### Handler
 
-The Handler is used to manage any loaded plugins. Plugins can be loaded via any stuct that implements the `pkg/plugin.Plugin` interface, or `.so` files. This should be used in any main application and not really in the plugins themselves. The handler will pass itself to the plugins when they are registered via the `Register` function on the Plugins interface, this allows them to store the managers pointer reference and use it for communicating with other plugins.
+The Handler is responsible for handling plugins and providing a number of utiliies to both the plugins and the application implementing the handler. Plugins can be loaded via any stuct that implements the `pkg.Plugin` interface, or `.so` files where they have an export `Plugin` variable the implements `pkg.Plugin`. Both the implementing application and the plugins will have access to the handler, but only the implementing application should import the `pkg/handler` package. The handler will pass itself to the plugins when they are registered via the `Register` function on the Plugins interface, this allows them to store the reference and use it for communicating. 
 
 Example use of the handler: 
-
-```go
-import (
-    "github.com/weavc/yuu/pkg"
-    "github.com/weavc/yuu/pkg/plugin"
-)
-
-type RegisterAPI interface {
-	RegisterRoutes(mux *http.ServeMux)
-}
-
-func main() {
-
-    var s *http.ServeMux = http.DefaultServeMux
-
-    // build plugins from source to examples/.bin
-	pkg.BuildPlugins("examples/.bin/", []string{"examples/plugins/hello-world", "examples/plugins/api"})
-
-	// create/get new Handler structure & load plugins from examples/.bin
-	m := pkg.NewHandler()
-	m.LoadPluginDir("examples/.bin/")
-
-    // recieve api events, these are emitted in the api plugin
-	m.On("api", func(v interface{}) {
-		s := v.(string)
-		log.Print(s)
-	})
-
-	// walk through plugins (foreach registered plugin)
-	m.Walk(func(man *plugin.Manifest, plgin plugin.Plugin) {
-		// check if plugin implements RegisterAPI interface defined above
-		p, e := plgin.(RegisterAPI)
-		if e == true {
-			// let plugin register handlers
-			p.RegisterRoutes(s)
-		}
-	})
-
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-```
-
-#### Plugins
-
-Plugins should only ever import `"github.com/weavc/yuu/pkg/plugin"`, this helps reduce circular reference issues and also the need to rebuild for any minor releases. If the plugin is being built & distibuted via the `.so` file (built using `go build -buildmode=plugin`), there should be an exported variable named `Plugin` in the main package, this is how the handler will find the Plugin in the binary, see below example for what this should look like.
-
-Example plugin:
 
 ```go
 package main
 
 import (
-	"encoding/json"
-	"net/http"
+	"log"
 
-	"github.com/weavc/yuu/pkg/plugin"
+    "github.com/weavc/yew/pkg"
+    "github.com/weavc/yew/pkg/handler"
 )
 
-// Plugin variable that implements github.com/weavc/yuu/pkg/plugin.Plugin
-// must be exported if building into a .so file.
-//This is how the Plugin is found within the binary plugin
-var Plugin ApiPlugin = ApiPlugin{}
+var h pkg.Handler
 
-// ApiPlugin is the struct that implements plugin.Plugin & more
-type ApiPlugin struct {
-	handler plugin.Handler
+func main() {
+	// create/get new Handler structure & load plugins from examples/.bin
+	h = handler.NewHandler(&handler.Config{
+		Services: true,
+		Events:   map[string]func(event string, v interface{}){pkg.LoadedEvent: onLoad},
+	})
 
-	plugin.Plugin
+	// load .so files inside '.plugins/' dir
+	h.LoadPluginsDir(".plugins/")
+
+	h.LoadPlugins(&Plugin)
+
+	t := time.Second * 5
+	<-time.After(t)
 }
 
-// Manifest gives the handler & other plugins an idea of what this plugin is
-func (p *ApiPlugin) Manifest() *plugin.Manifest {
-	return &plugin.Manifest{Name: "Api", Description: "Api plugin", Events: []string{"api"}}
-}
-
-// Register is used to initialize & setup the plugin
-func (p *ApiPlugin) Register(m plugin.Handler) error {
-	// store Handler pointer
-	p.handler = m
-
-	return nil
-}
-
-// RegisterRoutes implements an interface defined in examples/main.go
-// An example of how plugins can be extended to provide additional
-// communication with different applications.
-func (p ApiPlugin) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
-		p.handler.Emit("api", r.URL.String())
-		w.WriteHeader(200)
-		json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+func onLoad(event string, v interface{}) {
+	h.Walk(func(manifest pkg.Manifest, plgin pkg.Plugin) {
+		log.Printf("Loaded: %s", manifest.Namespace)
 	})
 }
 ```
+
+#### Plugins
+
+Plugins should only ever import `github.com/weavc/yew/pkg`, this helps reduce circular reference issues and also the need to rebuild for any minor releases. If the plugin is being built & distibuted via `.so` files (built using `go build -buildmode=plugin`), there should be an exported variable named `Plugin` in the main package, this is how the handler will find the Plugin in the binary, see below example for what this should look like.
+
+Example plugin:
+```go
+// this variable is looked up when loading the plugin from a .so file
+// so make sure its there!
+var Plugin plugin = plugin{}
+
+// simple plugin struct, implements pkg.Plugin
+type plugin struct {
+	pkg.Plugin
+	handler pkg.Handler
+}
+
+// Called as its being registered to the handler, can be used for setup/initialization
+// as this is the first thing that happens.
+// Also recommended to store the pkg.Handler reference at this stage
+func (p *plugin) Register(handler pkg.Handler) error {
+	p.handler = handler
+	return nil
+}
+
+// returns the manifest which defines the plugin, what events it would like to recieve, config etc
+func (p *plugin) Manifest() pkg.Manifest {
+	return pkg.Manifest{Namespace: "plugin.example", Description: "Example plugin"}
+}
+```
+
+Plugins can also be loaded directly via their structure using `Handler.LoadPlugins(<&plugin{}>)`.

@@ -6,10 +6,12 @@ import (
 	"path/filepath"
 	"plugin"
 
-	p "github.com/weavc/yuu/pkg/plugin"
+	"github.com/weavc/yew/pkg"
 )
 
-func LoadPlugins(directory string, handler func(v p.Plugin) error) error {
+// LoadPlugins finds all plugins in the provided directory
+// and then passes them through to LoadPlugin
+func LoadPlugins(directory string, handler func(v pkg.Plugin) error) error {
 	var files []string
 	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -39,7 +41,9 @@ func LoadPlugins(directory string, handler func(v p.Plugin) error) error {
 	return nil
 }
 
-func LoadPlugin(path string, handler func(v p.Plugin) error) error {
+// LoadPlugin opens the .so file, perfroms a lookup for the exported 'Plugin variable'
+// and checks it typing before passing it on the the handler
+func LoadPlugin(path string, handler func(v pkg.Plugin) error) error {
 	p1, err := plugin.Open(path)
 	if err != nil {
 		return err
@@ -50,9 +54,9 @@ func LoadPlugin(path string, handler func(v p.Plugin) error) error {
 		return err
 	}
 
-	p3, t := p2.(p.Plugin)
+	p3, t := p2.(pkg.Plugin)
 	if t == false {
-		return fmt.Errorf("Plugin variable not of correct type. should implement github.com/weavc/yuu/pkg/plugin/Plugin")
+		return fmt.Errorf("Plugin variable not of correct type. should implement github.com/weavc/yew/pkg/plugin/Plugin")
 	}
 
 	return handler(p3)

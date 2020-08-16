@@ -3,35 +3,41 @@ package main
 import (
 	"log"
 
-	"github.com/weavc/yuu/pkg/plugin"
+	"github.com/weavc/yew/pkg"
 )
 
 // Plugin variable must be exported
-// Plugin must also implement the github.com/weavc/yuu/pkg/plugin.Plugin interface
+// Plugin must also implement the github.com/weavc/yew/pkg/plugin.Plugin interface
 var Plugin HelloWorldPlugin = HelloWorldPlugin{}
 
 type HelloWorldPlugin struct {
-	handler plugin.Handler
+	handler pkg.Handler
+	pkg.Plugin
 
-	plugin.Plugin
+	c *Config
 }
 
-func (p *HelloWorldPlugin) Manifest() *plugin.Manifest {
-	return &plugin.Manifest{Name: "HelloWorld", Description: "Hello world event plugin"}
+type Config struct {
+	Say string
+}
+
+// Manifest returns
+func (p *HelloWorldPlugin) Manifest() pkg.Manifest {
+	return pkg.Manifest{
+		Namespace:   "examples.helloworld",
+		Description: "Hello world event plugin",
+		Config:      &p.c,
+		Events:      map[string]func(event string, v interface{}){pkg.LoadedEvent: p.helloWorldEvent},
+	}
 }
 
 // Register is used to initialize & setup the plugin
-func (p *HelloWorldPlugin) Register(m plugin.Handler) error {
-
-	// store Handler pointer
-	p.handler = m
-
-	// register event
-	p.handler.On(plugin.LOADED, helloWorldEvent)
-
+func (p *HelloWorldPlugin) Register(handler pkg.Handler) error {
+	p.c = &Config{Say: "earth"}
+	p.handler = handler
 	return nil
 }
 
-func helloWorldEvent(v interface{}) {
-	log.Print("Hello World")
+func (p *HelloWorldPlugin) helloWorldEvent(event string, v interface{}) {
+	log.Printf("Hello %s", p.c.Say)
 }
