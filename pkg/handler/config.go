@@ -9,11 +9,12 @@ import (
 
 // DefaultConfig is the default configuration for the handler
 // this is used if nil is sent through to handler.NewHandler
-var DefaultConfig *Config = &Config{Services: true}
+var DefaultConfig *Config = &Config{Services: true, UniqueNamespaces: true}
 
 // Config struct, defines what the handler does
 type Config struct {
 	Services         bool
+	UniqueNamespaces bool
 	PluginConfigPath string
 	Events           map[string]func(event string, v interface{})
 }

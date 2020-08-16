@@ -86,6 +86,14 @@ func (h *Handler) loadPlugin(p pkg.Plugin) error {
 
 	man := plg.Manifest()
 
+	if h.Config.UniqueNamespaces {
+		for _, fplg := range h.plugins {
+			if fplg.Manifest().Namespace == man.Namespace {
+				return fmt.Errorf("Plugin namespace clash %s", man.Namespace)
+			}
+		}
+	}
+
 	e := plg.Register(h)
 	if e != nil {
 		return e
