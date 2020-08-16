@@ -29,11 +29,16 @@ func main() {
 	// create/get new Handler structure & load plugins from examples/.bin
 	h = handler.NewHandler(&handler.Config{
 		Services: true,
-		Events: map[string]func(event string, v interface{}){pkg.LoadedEvent: onLoad},
+		Events:   map[string]func(event string, v interface{}){pkg.LoadedEvent: onLoad},
 	})
 
 	// load .so files inside '.plugins/' dir
 	h.LoadPluginsDir(".plugins/")
+
+	h.LoadPlugins(&Plugin)
+
+	t := time.Second * 5
+	<-time.After(t)
 }
 
 func onLoad(event string, v interface{}) {
