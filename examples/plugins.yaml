@@ -1,6 +1,4 @@
-'examples.api': {
+examples.api:
   payload: foobar
-}
-'examples.helloworld': {
+examples.hellowold:
   say: world
-}

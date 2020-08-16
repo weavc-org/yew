@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/weavc/yew/internal"
 	"github.com/weavc/yew/internal/configs"
@@ -105,8 +106,7 @@ func (h *Handler) loadPlugin(p pkg.Plugin) error {
 	if man.Config != nil {
 		err := h.FetchConfig(plg, man.Config)
 		if err != nil {
-			fmt.Print(fmt.Errorf("there was an error loading config for %s. this could mean the file was missing, "+
-				"or there were errors loading it", man.Namespace))
+			log.Printf("There was an error loading config for %s: %v", man.Namespace, err)
 		}
 	}
 
