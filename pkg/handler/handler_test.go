@@ -54,16 +54,17 @@ func TestGets(t *testing.T) {
 }
 
 func TestEvents(t *testing.T) {
-	// var response string
+	var response string
+	c := DefaultConfig
+	c.Events = map[string]func(string, interface{}){"test1": func(event string, v interface{}) {
+		s := v.(string)
+		response = s
+		if response != "hello!" {
+			t.Errorf("Incorrect response. recieved %s, expected hello!", response)
+		}
+	}}
 
-	m := NewHandler(nil)
-	// m.On("test1", func(v interface{}) {
-	// 	s := v.(string)
-	// 	response = s
-	// 	if response != "hello!" {
-	// 		t.Errorf("Incorrect response. recieved %s, expected hello!", response)
-	// 	}
-	// })
+	m := NewHandler(c)
 
 	test := NewTestPlugin("test1", func(m pkg.Handler) error {
 		m.Emit("test1", "hello!")
@@ -73,6 +74,17 @@ func TestEvents(t *testing.T) {
 	e := m.LoadPlugins(test)
 	if e != nil {
 		t.Error(e)
+	}
+}
+
+func TestDuplicateNamespaces(t *testing.T) {
+	m := NewHandler(nil)
+
+	test1 := NewTestPlugin("test1", func(m pkg.Handler) error { return nil })
+	test2 := NewTestPlugin("test1", func(m pkg.Handler) error { return nil })
+	e := m.LoadPlugins(test1, test2)
+	if e == nil {
+		t.Errorf("No error when namespaces collide")
 	}
 }
 
