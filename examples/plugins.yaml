@@ -1,4 +1,4 @@
 examples.api:
   payload: foobar
-examples.hellowold:
+examples.helloworld:
   say: world

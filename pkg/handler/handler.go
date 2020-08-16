@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/weavc/yew/internal"
-	"github.com/weavc/yew/internal/configs"
-	"github.com/weavc/yew/pkg"
+	"github.com/weavc/yew/v2/internal"
+	"github.com/weavc/yew/v2/internal/configs"
+	"github.com/weavc/yew/v2/pkg"
 )
 
 // Handler implements pkg.Handler

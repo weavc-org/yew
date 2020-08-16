@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"plugin"
 
-	"github.com/weavc/yew/pkg"
+	"github.com/weavc/yew/v2/pkg"
 )
 
 // LoadPlugins finds all plugins in the provided directory
@@ -56,7 +56,7 @@ func LoadPlugin(path string, handler func(v pkg.Plugin) error) error {
 
 	p3, t := p2.(pkg.Plugin)
 	if t == false {
-		return fmt.Errorf("Plugin variable not of correct type. should implement github.com/weavc/yew/pkg/plugin/Plugin")
+		return fmt.Errorf("Plugin variable not of correct type. should implement github.com/weavc/yew/v2/pkg/plugin/Plugin")
 	}
 
 	return handler(p3)

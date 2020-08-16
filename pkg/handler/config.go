@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 
-	"github.com/weavc/yew/internal/configs"
-	"github.com/weavc/yew/pkg"
+	"github.com/weavc/yew/v2/internal/configs"
+	"github.com/weavc/yew/v2/pkg"
 )
 
 // DefaultConfig is the default configuration for the handler
