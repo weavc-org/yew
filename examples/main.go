@@ -15,35 +15,35 @@ type RegisterAPI interface {
 
 func main() {
 
-	var s *http.ServeMux = http.DefaultServeMux
+	var mux *http.ServeMux = http.DefaultServeMux
 
 	// build plugins from source to examples/.bin
 	builders.BuildPlugins("examples/.bin/", "examples/plugins/hello-world", "examples/plugins/api")
 
 	// create/get new Handler structure & load plugins from examples/.bin
 	m := handler.NewHandler(&handler.Config{
-		Services:              true,
-		PluginConfigDirectory: "examples/configs",
-		Events:                map[string]func(v interface{}){"api": apiEvent},
+		Services:         true,
+		PluginConfigPath: "examples/plugins.yaml",
+		Events:           map[string]func(event string, v interface{}){"api": apiEvent},
 	})
 
 	m.LoadPluginsDir("examples/.bin/")
 
 	// recieve api events, these are emitted in the api plugin
 	// walk through plugins (foreach registered plugin)
-	m.Walk(func(man pkg.Manifest, plgin pkg.Plugin) {
+	m.Walk(func(man pkg.Manifest, plugin pkg.Plugin) {
 		// check if plugin implements RegisterAPI interface defined above
-		p, e := plgin.(RegisterAPI)
+		p, e := plugin.(RegisterAPI)
 		if e == true {
 			// let plugin register handlers
-			p.RegisterRoutes(s)
+			p.RegisterRoutes(mux)
 		}
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func apiEvent(v interface{}) {
+func apiEvent(event string, v interface{}) {
 	s := v.(string)
 	log.Print(s)
 }

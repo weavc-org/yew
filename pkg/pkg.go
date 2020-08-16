@@ -3,13 +3,13 @@ package pkg
 const (
 	// LoadedEvent event name
 	// Triggered after loading a plugin or set of plugins
-	LoadedEvent string = "loaded"
+	LoadedEvent string = "loaded_event"
 	// PluginRegisteredEvent event name
 	// Triggered after registering a plugin
-	PluginRegisteredEvent string = "registered"
+	PluginRegisteredEvent string = "plugin_registered_event"
 	// ServiceStartedEvent event name
 	// Triggered after starting a service
-	ServiceStartedEvent string = "service"
+	ServiceStartedEvent string = "service_started_event"
 )
 
 // Handler defines a set of functions that can be used by plugins and the application
@@ -26,7 +26,7 @@ type Handler interface {
 type Manifest struct {
 	Namespace   string
 	Description string
-	Events      map[string]func(v interface{})
+	Events      map[string]func(event string, v interface{})
 	Config      interface{}
 	Data        map[string]interface{}
 }
@@ -34,11 +34,11 @@ type Manifest struct {
 // Plugin defines a basic plugin
 type Plugin interface {
 	Manifest() Manifest
-	Register(m Handler) error
+	Register(h Handler) error
 }
 
 // Service defines a service plugin
-// A service is started as a go routine when the plugin is registered
+// service plugins are started as a go routine when the plugin is registered
 type Service interface {
 	Plugin
 	Start()

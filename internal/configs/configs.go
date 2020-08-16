@@ -2,30 +2,37 @@ package configs
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/viper"
+	"github.com/mitchellh/mapstructure"
+	"gopkg.in/yaml.v2"
 )
 
-func LoadConfig(dir string, name string, v interface{}) error {
-	path, err := CheckPath(dir)
+func FetchConfig(path string, plugin string, v interface{}) error {
+	path, err := CheckPath(path)
 	if err != nil {
 		return err
 	}
 
-	vip := viper.New()
-	vip.SetConfigName(name)
-
-	// this will come from handler
-	vip.AddConfigPath(path)
-
-	err = vip.ReadInConfig()
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
 	}
 
-	err = vip.Unmarshal(v)
+	var u map[string]interface{} = make(map[string]interface{})
+
+	err = yaml.Unmarshal(data, &u)
+	if err != nil {
+		return err
+	}
+
+	if u[plugin] == nil {
+		return fmt.Errorf("No config found")
+	}
+
+	err = mapstructure.Decode(u[plugin], v)
 	if err != nil {
 		return err
 	}
@@ -33,17 +40,13 @@ func LoadConfig(dir string, name string, v interface{}) error {
 	return nil
 }
 
-func CheckPath(dir string) (string, error) {
-	info, e := os.Stat(dir)
+func CheckPath(path string) (string, error) {
+	_, e := os.Stat(path)
 	if e != nil {
 		return "", e
 	}
 
-	if !info.IsDir() {
-		return "", fmt.Errorf("output is not a directory")
-	}
-
-	o, e := filepath.Abs(dir)
+	o, e := filepath.Abs(path)
 	if e != nil {
 		return "", e
 	}

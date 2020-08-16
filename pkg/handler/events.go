@@ -11,7 +11,7 @@ func (m *Handler) Emit(name string, v interface{}) {
 		if m.Events != nil {
 			for key, handler := range m.Events {
 				if key == name {
-					go handler(v)
+					go handler(name, v)
 				}
 			}
 		}
@@ -19,7 +19,7 @@ func (m *Handler) Emit(name string, v interface{}) {
 
 	for key, handler := range m.Config.Events {
 		if key == name {
-			go handler(v)
+			go handler(name, v)
 		}
 	}
 }

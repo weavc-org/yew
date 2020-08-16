@@ -8,28 +8,27 @@ import (
 	"github.com/weavc/yew/pkg"
 )
 
-// Handler struct. This implements plugin/Handler interface and handles the plugins
+// Handler implements pkg.Handler
 type Handler struct {
 	pkg.Handler
-
 	plugins []pkg.Plugin
-
-	Config *Config
+	Config  *Config
 }
 
-// LoadPluginsDir will load all plugins in provided directory path
-func (m *Handler) LoadPluginsDir(directory string) error {
-	e := internal.LoadPlugins(directory, m.loadPlugin)
-	if e != nil {
-		return e
+// LoadPluginsDir will load all .so plugins in given directory
+func (h *Handler) LoadPluginsDir(directory string) error {
+	err := internal.LoadPlugins(directory, h.loadPlugin)
+	if err != nil {
+		return err
 	}
-	m.Emit(pkg.LOADED, nil)
+	h.Emit(pkg.LoadedEvent, nil)
 	return nil
 }
 
-func (m *Handler) LoadPlugins(p ...pkg.Plugin) error {
-	for _, plugin := range p {
-		err := m.loadPlugin(plugin)
+// LoadPlugins takes plugins, loads and registers them with the handler
+func (h *Handler) LoadPlugins(plugins ...pkg.Plugin) error {
+	for _, plugin := range plugins {
+		err := h.loadPlugin(plugin)
 		if err != nil {
 			return fmt.Errorf("Error loading plugin: %s", err)
 		}
@@ -40,16 +39,16 @@ func (m *Handler) LoadPlugins(p ...pkg.Plugin) error {
 
 // Walk will take you on a walk through the registered plugins
 // for each plugin, the handler function passed through will be called
-func (m *Handler) Walk(handler func(manifest pkg.Manifest, v pkg.Plugin)) {
-	for _, p := range m.plugins {
+func (h *Handler) Walk(handler func(manifest pkg.Manifest, plugin pkg.Plugin)) {
+	for _, p := range h.plugins {
 		handler(p.Manifest(), p)
 	}
 }
 
 // GetPlugins will return an array of registered plugins
-func (m *Handler) GetPlugins() []pkg.Plugin {
+func (h *Handler) GetPlugins() []pkg.Plugin {
 	var plgs []pkg.Plugin
-	m.Walk(func(manifest pkg.Manifest, v pkg.Plugin) {
+	h.Walk(func(manifest pkg.Manifest, v pkg.Plugin) {
 		p, t := v.(pkg.Plugin)
 		if t == true {
 			plgs = append(plgs, p)
@@ -59,57 +58,57 @@ func (m *Handler) GetPlugins() []pkg.Plugin {
 	return plgs
 }
 
-// NewHandler creates & returns pkg.Handler structure
+// NewHandler creates & returns a new pkg.Handler struct
 func NewHandler(c *Config) pkg.Handler {
 	if c == nil {
 		c = DefaultConfig
 	}
 
-	if c.PluginConfigDirectory != "" {
-		s, err := configs.CheckPath(c.PluginConfigDirectory)
+	if c.PluginConfigPath != "" {
+		s, err := configs.CheckPath(c.PluginConfigPath)
 		if err != nil {
 			panic(err)
 		}
 
-		c.PluginConfigDirectory = s
+		c.PluginConfigPath = s
 	}
 
 	m := &Handler{Config: c}
 	return m
 }
 
-// LoadPlugin will take a struct that implements plugin.Plugin and load it into the Handler
-func (m *Handler) loadPlugin(p pkg.Plugin) error {
+// loadPlugin is the initialization handler for plugins, triggered after the plugin is loaded
+func (h *Handler) loadPlugin(p pkg.Plugin) error {
 	plg, c := p.(pkg.Plugin)
-	if c == true {
-		m.plugins = append(m.plugins, plg)
-
-		man := plg.Manifest()
-
-		e := plg.Register(m)
-		if e != nil {
-			return e
-		}
-
-		m.Emit(pkg.PLUGIN_REGISTERED, plg)
-
-		if man.Config != nil {
-			err := m.LoadConfig(plg, man.Config)
-			if err != nil {
-				fmt.Print(fmt.Errorf("there was an error loading config for %s. this could mean the file was missing, or there were errors loading it", man.Name))
-			}
-		}
-
-		service, c := p.(pkg.Service)
-		if c == true {
-			if m.Config.Services == true {
-				go service.Start()
-				m.Emit(pkg.SERVICE_STARTED, plg)
-			}
-		}
-
-		return nil
+	if c == false {
+		return fmt.Errorf("Plugin does not implement the pkg.Plugin interface")
 	}
 
-	return fmt.Errorf("Plugin does not implement Plugin interface")
+	man := plg.Manifest()
+
+	e := plg.Register(h)
+	if e != nil {
+		return e
+	}
+
+	h.plugins = append(h.plugins, plg)
+	h.Emit(pkg.PluginRegisteredEvent, plg)
+
+	if man.Config != nil {
+		err := h.FetchConfig(plg, man.Config)
+		if err != nil {
+			fmt.Print(fmt.Errorf("there was an error loading config for %s. this could mean the file was missing, "+
+				"or there were errors loading it", man.Namespace))
+		}
+	}
+
+	service, c := p.(pkg.Service)
+	if c == true {
+		if h.Config.Services == true {
+			go service.Start()
+			h.Emit(pkg.ServiceStartedEvent, plg)
+		}
+	}
+
+	return nil
 }

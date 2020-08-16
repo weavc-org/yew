@@ -47,7 +47,7 @@ func TestGets(t *testing.T) {
 	}
 
 	m.Walk(func(m pkg.Manifest, v pkg.Plugin) {
-		if m.Name != "test1" && m.Name != "test2" {
+		if m.Namespace != "test1" && m.Namespace != "test2" {
 			t.Errorf("Incorrect plugin found in walk")
 		}
 	})
@@ -88,7 +88,7 @@ type TestPlugin1 struct {
 }
 
 func (p *TestPlugin1) Manifest() pkg.Manifest {
-	return pkg.Manifest{Name: p.name, Description: "Plugin used in testing"}
+	return pkg.Manifest{Namespace: p.name, Description: "Plugin used in testing"}
 }
 
 func (p *TestPlugin1) Register(m pkg.Handler) error {

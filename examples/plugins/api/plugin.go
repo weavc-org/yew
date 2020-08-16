@@ -10,10 +10,10 @@ import (
 // Plugin variable that implements github.com/weavc/yew/pkg/plugin.Plugin
 // must be exported if building into a .so file.
 //This is how the Plugin is found within the binary plugin
-var Plugin ApiPlugin = ApiPlugin{config: &c{}}
+var Plugin APIPlugin = APIPlugin{config: &c{}}
 
-// ApiPlugin is the struct that implements plugin.Plugin & more
-type ApiPlugin struct {
+// APIPlugin is the struct that implements plugin.Plugin & more
+type APIPlugin struct {
 	handler pkg.Handler
 
 	pkg.Plugin
@@ -21,12 +21,12 @@ type ApiPlugin struct {
 }
 
 // Manifest gives the handler & other plugins an idea of what this plugin is
-func (p *ApiPlugin) Manifest() pkg.Manifest {
+func (p *APIPlugin) Manifest() pkg.Manifest {
 	return pkg.Manifest{Namespace: "examples.api", Description: "Api plugin", Config: p.config}
 }
 
 // Register is used to initialize & setup the plugin
-func (p *ApiPlugin) Register(m pkg.Handler) error {
+func (p *APIPlugin) Register(m pkg.Handler) error {
 	// store Handler pointer
 	p.handler = m
 
@@ -36,7 +36,7 @@ func (p *ApiPlugin) Register(m pkg.Handler) error {
 // RegisterRoutes implements an interface defined in examples/main.go
 // An example of how plugins can be extended to provide additional
 // communication with different applications.
-func (p *ApiPlugin) RegisterRoutes(mux *http.ServeMux) {
+func (p *APIPlugin) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/api", func(w http.ResponseWriter, r *http.Request) {
 		p.handler.Emit("api", r.URL.String())
 		w.WriteHeader(200)
