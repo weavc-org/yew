@@ -2,18 +2,15 @@ package handler
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/weavc/yew/v2/internal"
-	"github.com/weavc/yew/v2/internal/configs"
 	"github.com/weavc/yew/v2/pkg"
 )
 
 // Handler implements pkg.Handler
 type Handler struct {
 	pkg.Handler
-	plugins []pkg.Plugin
-	Config  *Config
+	plugins map[string]pkg.Plugin
 }
 
 // LoadPluginsDir will load all .so plugins in given directory
@@ -22,7 +19,6 @@ func (h *Handler) LoadPluginsDir(directory string) error {
 	if err != nil {
 		return err
 	}
-	h.Emit(pkg.LoadedEvent, nil)
 	return nil
 }
 
@@ -31,7 +27,7 @@ func (h *Handler) LoadPlugins(plugins ...pkg.Plugin) error {
 	for _, plugin := range plugins {
 		err := h.loadPlugin(plugin)
 		if err != nil {
-			return fmt.Errorf("Error loading plugin: %s", err)
+			return fmt.Errorf("error loading plugin: %s", err)
 		}
 	}
 
@@ -50,72 +46,36 @@ func (h *Handler) Walk(handler func(manifest pkg.Manifest, plugin pkg.Plugin)) {
 func (h *Handler) GetPlugins() []pkg.Plugin {
 	var plgs []pkg.Plugin
 	h.Walk(func(manifest pkg.Manifest, v pkg.Plugin) {
-		p, t := v.(pkg.Plugin)
-		if t == true {
-			plgs = append(plgs, p)
-		}
+		plgs = append(plgs, v)
 	})
 
 	return plgs
 }
 
 // NewHandler creates & returns a new pkg.Handler struct
-func NewHandler(c *Config) pkg.Handler {
-	if c == nil {
-		c = DefaultConfig
-	}
-
-	if c.PluginConfigPath != "" {
-		s, err := configs.CheckPath(c.PluginConfigPath)
-		if err != nil {
-			panic(err)
-		}
-
-		c.PluginConfigPath = s
-	}
-
-	m := &Handler{Config: c}
+func NewHandler() pkg.Handler {
+	m := &Handler{plugins: make(map[string]pkg.Plugin)}
 	return m
 }
 
 // loadPlugin is the initialization handler for plugins, triggered after the plugin is loaded
 func (h *Handler) loadPlugin(p pkg.Plugin) error {
-	plg, c := p.(pkg.Plugin)
-	if c == false {
-		return fmt.Errorf("Plugin does not implement the pkg.Plugin interface")
+
+	_, exists := h.plugins[p.Manifest().Namespace]
+	if exists {
+		return fmt.Errorf("plugin namespace clash %s", p.Manifest().Namespace)
 	}
 
-	man := plg.Manifest()
-
-	if h.Config.UniqueNamespaces {
-		for _, fplg := range h.plugins {
-			if fplg.Manifest().Namespace == man.Namespace {
-				return fmt.Errorf("Plugin namespace clash %s", man.Namespace)
-			}
-		}
-	}
-
-	e := plg.Register(h)
+	e := p.Setup(h)
 	if e != nil {
 		return e
 	}
 
-	h.plugins = append(h.plugins, plg)
-	h.Emit(pkg.PluginRegisteredEvent, plg)
-
-	if man.Config != nil {
-		err := h.FetchConfig(plg, man.Config)
-		if err != nil {
-			log.Printf("There was an error loading config for %s: %v", man.Namespace, err)
-		}
-	}
+	h.plugins[p.Manifest().Namespace] = p
 
 	service, c := p.(pkg.Service)
-	if c == true {
-		if h.Config.Services == true {
-			go service.Start()
-			h.Emit(pkg.ServiceStartedEvent, plg)
-		}
+	if c {
+		go service.Start()
 	}
 
 	return nil

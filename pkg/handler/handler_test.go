@@ -9,7 +9,7 @@ import (
 )
 
 func TestPluginLoader(t *testing.T) {
-	m := NewHandler(nil)
+	m := NewHandler()
 
 	test := NewTestPlugin("test1", func(m pkg.Handler) error { return nil })
 
@@ -27,7 +27,7 @@ func TestPluginLoader(t *testing.T) {
 
 func TestGets(t *testing.T) {
 
-	m := NewHandler(nil)
+	m := NewHandler()
 
 	test1 := NewTestPlugin("test1", func(m pkg.Handler) error { return nil })
 	e := m.LoadPlugins(test1)
@@ -53,32 +53,8 @@ func TestGets(t *testing.T) {
 	})
 }
 
-func TestEvents(t *testing.T) {
-	var response string
-	c := DefaultConfig
-	c.Events = map[string]func(string, interface{}){"test1": func(event string, v interface{}) {
-		s := v.(string)
-		response = s
-		if response != "hello!" {
-			t.Errorf("Incorrect response. recieved %s, expected hello!", response)
-		}
-	}}
-
-	m := NewHandler(c)
-
-	test := NewTestPlugin("test1", func(m pkg.Handler) error {
-		m.Emit("test1", "hello!")
-		return nil
-	})
-
-	e := m.LoadPlugins(test)
-	if e != nil {
-		t.Error(e)
-	}
-}
-
 func TestDuplicateNamespaces(t *testing.T) {
-	m := NewHandler(nil)
+	m := NewHandler()
 
 	test1 := NewTestPlugin("test1", func(m pkg.Handler) error { return nil })
 	test2 := NewTestPlugin("test1", func(m pkg.Handler) error { return nil })
@@ -88,27 +64,27 @@ func TestDuplicateNamespaces(t *testing.T) {
 	}
 }
 
-func NewTestPlugin(name string, r func(m pkg.Handler) error) *TestPlugin1 {
-	return &TestPlugin1{r: r, name: name}
+func NewTestPlugin(name string, r func(m pkg.Handler) error) *MockPlugin1 {
+	return &MockPlugin1{r: r, name: name}
 }
 
-type TestPlugin1 struct {
+type MockPlugin1 struct {
 	r    func(m pkg.Handler) error
 	name string
 	pkg.Plugin
 	pkg.Service
 }
 
-func (p *TestPlugin1) Manifest() pkg.Manifest {
+func (p *MockPlugin1) Manifest() pkg.Manifest {
 	return pkg.Manifest{Namespace: p.name, Description: "Plugin used in testing"}
 }
 
-func (p *TestPlugin1) Register(m pkg.Handler) error {
+func (p *MockPlugin1) Setup(m pkg.Handler) error {
 	return p.r(m)
 }
 
-func (p *TestPlugin1) Start() {
+func (p *MockPlugin1) Start() {
 	return
 }
 
-type TestPlugin2 struct{}
+type MockPlugin2 struct{}

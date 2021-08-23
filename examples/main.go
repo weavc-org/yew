@@ -21,11 +21,7 @@ func main() {
 	builders.BuildPlugins("examples/.bin/", "examples/plugins/hello-world", "examples/plugins/api")
 
 	// create/get new Handler structure & load plugins from examples/.bin
-	m := handler.NewHandler(&handler.Config{
-		Services:         true,
-		PluginConfigPath: "examples/plugins.yaml",
-		Events:           map[string]func(event string, v interface{}){"api": apiEvent},
-	})
+	m := handler.NewHandler()
 
 	m.LoadPluginsDir("examples/.bin/")
 
@@ -34,16 +30,11 @@ func main() {
 	m.Walk(func(man pkg.Manifest, plugin pkg.Plugin) {
 		// check if plugin implements RegisterAPI interface defined above
 		p, e := plugin.(RegisterAPI)
-		if e == true {
+		if e {
 			// let plugin register handlers
 			p.RegisterRoutes(mux)
 		}
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func apiEvent(event string, v interface{}) {
-	s := v.(string)
-	log.Print(s)
 }
