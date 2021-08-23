@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/weavc/yew/v2/pkg"
+	"github.com/weavc/yew/v3/pkg"
 )
 
 // Plugin variable must be exported
-// Plugin must also implement the github.com/weavc/yew/v2/pkg/plugin.Plugin interface
+// Plugin must also implement the github.com/weavc/yew/v3/pkg/plugin.Plugin interface
 var Plugin HelloWorldPlugin = HelloWorldPlugin{}
 
 type HelloWorldPlugin struct {

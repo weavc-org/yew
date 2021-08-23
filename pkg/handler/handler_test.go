@@ -5,7 +5,7 @@ import (
 
 	"testing"
 
-	"github.com/weavc/yew/v2/pkg"
+	"github.com/weavc/yew/v3/pkg"
 )
 
 func TestPluginLoader(t *testing.T) {

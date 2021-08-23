@@ -4,9 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/weavc/yew/v2/pkg"
-	"github.com/weavc/yew/v2/pkg/builders"
-	"github.com/weavc/yew/v2/pkg/handler"
+	"github.com/weavc/yew/v3/pkg"
+	"github.com/weavc/yew/v3/pkg/builders"
+	"github.com/weavc/yew/v3/pkg/handler"
 )
 
 type RegisterAPI interface {

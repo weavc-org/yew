@@ -19,8 +19,8 @@ package main
 import (
 	"log"
 
-    "github.com/weavc/yew/v2/pkg"
-    "github.com/weavc/yew/v2/pkg/handler"
+    "github.com/weavc/yew/v3/pkg"
+    "github.com/weavc/yew/v3/pkg/handler"
 )
 
 var h pkg.Handler
@@ -50,7 +50,7 @@ func onLoad(event string, v interface{}) {
 
 #### Plugins
 
-Plugins should only ever import `github.com/weavc/yew/v2/pkg`, this helps reduce circular reference issues and also the need to rebuild for any minor releases. If the plugin is being built & distibuted via `.so` files (built using `go build -buildmode=plugin`), there should be an exported variable named `Plugin` in the main package, this is how the handler will find the Plugin in the binary, see below example for what this should look like.
+Plugins should only ever import `github.com/weavc/yew/v3/pkg`, this helps reduce circular reference issues and also the need to rebuild for any minor releases. If the plugin is being built & distibuted via `.so` files (built using `go build -buildmode=plugin`), there should be an exported variable named `Plugin` in the main package, this is how the handler will find the Plugin in the binary, see below example for what this should look like.
 
 Example plugin:
 ```go

@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 
-	"github.com/weavc/yew/v2/internal"
-	"github.com/weavc/yew/v2/pkg"
+	"github.com/weavc/yew/v3/internal"
+	"github.com/weavc/yew/v3/pkg"
 )
 
 // Handler implements pkg.Handler

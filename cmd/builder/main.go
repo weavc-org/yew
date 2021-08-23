@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/weavc/yew/v2/internal"
+	"github.com/weavc/yew/v3/internal"
 )
 
 var (
