@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"plugin"
+	"strings"
 
 	"github.com/weavc/yew/v3/pkg"
 )
@@ -12,6 +13,20 @@ import (
 // LoadPlugins finds all plugins in the provided directory
 // and then passes them through to LoadPlugin
 func LoadPlugins(directory string, handler func(v pkg.Plugin) error) error {
+
+	if strings.HasSuffix(directory, "/**") {
+		return filepath.Walk(strings.TrimSuffix(directory, "**"), func(path string, info os.FileInfo, err error) error {
+			if path == strings.TrimSuffix(directory, "**") {
+				return nil
+			}
+
+			if !info.IsDir() {
+				return nil
+			}
+			return LoadPlugins(path, handler)
+		})
+	}
+
 	var files []string
 	err := filepath.Walk(directory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

@@ -43,8 +43,32 @@ func TestLoadPlugins(t *testing.T) {
 	}
 }
 
+func TestNestedBuildPlugins(t *testing.T) {
+
+	e := buildPlugins2()
+	if e != nil {
+		t.Error(e)
+	}
+}
+
+func TestNestedLoadPlugins(t *testing.T) {
+	e := LoadPlugins("../examples/.bin/**", func(v pkg.Plugin) error {
+		t.Logf("%s", v.Manifest().Namespace)
+		return nil
+	})
+	if e != nil {
+		t.Error(e)
+	}
+}
+
 func buildPlugins() error {
 	e := BuildPlugins("../examples/.bin/", []string{"../examples/plugins/api", "../examples/plugins/hello-world"})
+	built = true
+	return e
+}
+
+func buildPlugins2() error {
+	e := BuildPlugins("../examples/.bin/", []string{"../examples/plugins/**"})
 	built = true
 	return e
 }

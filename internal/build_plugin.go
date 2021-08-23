@@ -7,13 +7,23 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // BuildPlugin builds go plugins to provided directory
 func BuildPlugin(output string, dir string) error {
-	b, e := build.ImportDir(dir, build.FindOnly)
-	if e != nil {
-		return e
+
+	if strings.HasSuffix(dir, "/**") {
+		return filepath.Walk(strings.TrimSuffix(dir, "**"), func(path string, info os.FileInfo, err error) error {
+			if path == strings.TrimSuffix(dir, "**") {
+				return nil
+			}
+
+			if !info.IsDir() {
+				return nil
+			}
+			return BuildPlugin(output, path)
+		})
 	}
 
 	info, e := os.Stat(dir)
@@ -23,6 +33,11 @@ func BuildPlugin(output string, dir string) error {
 
 	if !info.IsDir() {
 		return fmt.Errorf("%s not a directory", dir)
+	}
+
+	b, e := build.ImportDir(dir, build.FindOnly)
+	if e != nil {
+		return e
 	}
 
 	cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", fmt.Sprintf("%s/%s.so", output, info.Name()), ".")
